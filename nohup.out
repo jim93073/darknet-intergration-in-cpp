@@ -1,0 +1,78 @@
+2021-09-21 23:44:25.187760: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudart.so.10.0
+[yolotalk] Loading Model
+[yolotalk_cmd] loading_model
+ 0 : compute_capability = 530, cudnn_half = 0, GPU: NVIDIA Tegra X1 
+   layer   filters  size/strd(dil)      input                output
+   0 conv     32       3 x 3/ 2    416 x 416 x   3 ->  208 x 208 x  32 0.075 BF
+   1 conv     64       3 x 3/ 2    208 x 208 x  32 ->  104 x 104 x  64 0.399 BF
+   2 conv     64       3 x 3/ 1    104 x 104 x  64 ->  104 x 104 x  64 0.797 BF
+   3 route  2 		                       1/2 ->  104 x 104 x  32 
+   4 conv     32       3 x 3/ 1    104 x 104 x  32 ->  104 x 104 x  32 0.199 BF
+   5 conv     32       3 x 3/ 1    104 x 104 x  32 ->  104 x 104 x  32 0.199 BF
+   6 route  5 4 	                           ->  104 x 104 x  64 
+   7 conv     64       1 x 1/ 1    104 x 104 x  64 ->  104 x 104 x  64 0.089 BF
+   8 route  2 7 	                           ->  104 x 104 x 128 
+   9 max                2x 2/ 2    104 x 104 x 128 ->   52 x  52 x 128 0.001 BF
+  10 conv    128       3 x 3/ 1     52 x  52 x 128 ->   52 x  52 x 128 0.797 BF
+  11 route  10 		                       1/2 ->   52 x  52 x  64 
+  12 conv     64       3 x 3/ 1     52 x  52 x  64 ->   52 x  52 x  64 0.199 BF
+  13 conv     64       3 x 3/ 1     52 x  52 x  64 ->   52 x  52 x  64 0.199 BF
+  14 route  13 12 	                           ->   52 x  52 x 128 
+  15 conv    128       1 x 1/ 1     52 x  52 x 128 ->   52 x  52 x 128 0.089 BF
+  16 route  10 15 	                           ->   52 x  52 x 256 
+  17 max                2x 2/ 2     52 x  52 x 256 ->   26 x  26 x 256 0.001 BF
+  18 conv    256       3 x 3/ 1     26 x  26 x 256 ->   26 x  26 x 256 0.797 BF
+  19 route  18 		                       1/2 ->   26 x  26 x 128 
+  20 conv    128       3 x 3/ 1     26 x  26 x 128 ->   26 x  26 x 128 0.199 BF
+  21 conv    128       3 x 3/ 1     26 x  26 x 128 ->   26 x  26 x 128 0.199 BF
+  22 route  21 20 	                           ->   26 x  26 x 256 
+  23 conv    256       1 x 1/ 1     26 x  26 x 256 ->   26 x  26 x 256 0.089 BF
+  24 route  18 23 	                           ->   26 x  26 x 512 
+  25 max                2x 2/ 2     26 x  26 x 512 ->   13 x  13 x 512 0.000 BF
+  26 conv    512       3 x 3/ 1     13 x  13 x 512 ->   13 x  13 x 512 0.797 BF
+  27 conv    256       1 x 1/ 1     13 x  13 x 512 ->   13 x  13 x 256 0.044 BF
+  28 conv    512       3 x 3/ 1     13 x  13 x 256 ->   13 x  13 x 512 0.399 BF
+  29 conv    255       1 x 1/ 1     13 x  13 x 512 ->   13 x  13 x 255 0.044 BF
+  30 yolo
+[yolo] params: iou loss: ciou (4), iou_norm: 0.07, cls_norm: 1.00, scale_x_y: 1.05
+  31 route  27 		                           ->   13 x  13 x 256 
+  32 conv    128       1 x 1/ 1     13 x  13 x 256 ->   13 x  13 x 128 0.011 BF
+  33 upsample                 2x    13 x  13 x 128 ->   26 x  26 x 128
+  34 route  33 23 	                           ->   26 x  26 x 384 
+  35 conv    256       3 x 3/ 1     26 x  26 x 384 ->   26 x  26 x 256 1.196 BF
+  36 conv    255       1 x 1/ 1     26 x  26 x 256 ->   26 x  26 x 255 0.088 BF
+  37 yolo
+[yolo] params: iou loss: ciou (4), iou_norm: 0.07, cls_norm: 1.00, scale_x_y: 1.05
+Total BFLOPS 6.910 
+avg_outputs = 310203 
+ Allocate additional workspace_size = 26.22 MB 
+Loading weights from /home/jim/SmartFence/darknet-integration/libs/darknet/weights/yolov4-tiny.weights...net.optimized_memory = 0 
+mini_batch = 1, batch = 1, time_steps = 1, train = 0 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+Done! Loaded 38 layers from weights-file 
+[yolotalk] Model loaded
+[yolotalk_cmd] loading_model_finish
+[yolotalk] Warming up
+[yolotalk_cmd] warming_up
+[yolotalk] Warming up finished
+[yolotalk_cmd] warming_up_finish
+[yolotalk] Loading video
+IoTtalk Server = https://edgecore.iottalk.tw
+This device has successfully registered.
+Device name = YOLOjim
+Create control threading
+Device state: RESUME
+[yolotalk_cmd] loading_video
+
+ seen 64, trained: 0 K-images (0 Kilo-batches_64) 
+[yolotalk] Start prediction.
+[yolotalk_cmd] start_predict
+Traceback (most recent call last):
+  File "/home/jim/SmartFence/darknet-integration/SmartFence.py", line 103, in <module>
+    yolo1.start()
+  File "/home/jim/SmartFence/darknet-integration/libs/darknet/yolo_device.py", line 138, in start
+    self.device.start()
+  File "/home/jim/SmartFence/darknet-integration/libs/darknet/libyolotalk.py", line 222, in start
+    so.YoloDevice_start(self.obj)
+KeyboardInterrupt
