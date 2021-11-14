@@ -146,16 +146,11 @@ void YoloDevice::warmUpModel()
 
 void YoloDevice::videoCaptureLoop()
 {
-    // std::chrono::milliseconds timespan(5000);
-    // std::this_thread::sleep_for(timespan);
-
-    std::mutex g_mutex;
     cv::VideoCapture cap(url);
 
-    if (!cap.isOpened())
-    {
+    if (!cap.isOpened()){
         this->print_msg("Error. cannot open video: %s", url);
-        // throw "Error. cannot open video.";
+        system("/home/jim/restart_sf.sh");        
     }
 
     while (this->running){
@@ -164,10 +159,6 @@ void YoloDevice::videoCaptureLoop()
             this->print_msg("Cannot read frame: %s", url);
             system("/home/jim/restart_sf.sh");
         }
-        // g_mutex.lock();
-        // frame_copy = frame;
-        // std::chrono::milliseconds(10);
-        // g_mutex.unlock();
     }
     this->running = false;
     cap.release();
@@ -182,12 +173,8 @@ void YoloDevice::predictionLoop()
     double fps, prediction_start_time, sum_prediction_time, loop_start_time, loop_time;
     double lastTime = what_time_is_it_now();
 
-    // std::chrono::milliseconds timespan(5000);
-    // std::this_thread::sleep_for(timespan);
-
     while (this->running)
     {
-        // if (false){
         if (!ret){
             this->print_msg("%s", "Waiting for new frame...");
             std::chrono::milliseconds timespan(10000);
@@ -204,11 +191,9 @@ void YoloDevice::predictionLoop()
         std::vector<BoundingBox *> *boxes = yolo->detect_image(frame_, thresh, 0.45);
         sum_prediction_time += what_time_is_it_now() - prediction_start_time;
 
-        
-
         this->runCallback(frame_id, frame_, boxes);
         // std::thread th(&YoloDevice::runCallback, this, frame_id, frame_, boxes);
-        // std::thread::id tid = th.get_id();      
+        // std::thread::id tid = th.get_id();
 
         frame_id++;
         ctn++;
