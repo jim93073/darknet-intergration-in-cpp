@@ -4,7 +4,14 @@
 #include <yolotalk_utils.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
+#include <algorithm>
+#include <signal.h>
+#include <mutex>
+#include <chrono>
 
+cv::Mat frame;
+bool ret = false;
 
 YoloDevice::YoloDevice(char *cfg, char *weights, char *name_list, char *url, float thresh, float *vertices, int vertices_size, char *output_folder, int max_video_queue_size, bool show_msg)
 {
@@ -17,8 +24,9 @@ YoloDevice::YoloDevice(char *cfg, char *weights, char *name_list, char *url, flo
     this->setPolygon(vertices, vertices_size);
     this->videoQueue = new SafeQueue<Mat *>();
     this->max_video_queue_size = max_video_queue_size;
-    this->show_msg = show_msg;
+    this->show_msg = show_msg;  
 }
+
 
 void YoloDevice::start()
 {
@@ -38,7 +46,9 @@ void YoloDevice::start()
 
     this->warmUpModel();
 
-    this->running = true;    
+    this->running = true;         
+    
+    this->videoThread = new std::thread(&YoloDevice::videoCaptureLoop, this);
     this->predictionThread = new std::thread(&YoloDevice::predictionLoop, this);
 }
 
@@ -134,39 +144,59 @@ void YoloDevice::warmUpModel()
     this->print_cmd_msg(YOLOTALK_CMD_WARMING_UP_FINISH);
 }
 
-void YoloDevice::predictionLoop()
+void YoloDevice::videoCaptureLoop()
 {
-    this->print_msg("Start prediction.%s", "");
-    this->print_cmd_msg(YOLOTALK_CMD_START_PREDICT);
-    int frame_id = 0;
-    int ctn = 0;
-    double fps, prediction_start_time, sum_prediction_time, loop_start_time, loop_time;
-    
-    Mat frame;
-    double lastTime = what_time_is_it_now();
+    // std::chrono::milliseconds timespan(5000);
+    // std::this_thread::sleep_for(timespan);
+
+    std::mutex g_mutex;
     cv::VideoCapture cap(url);
 
     if (!cap.isOpened())
     {
         this->print_msg("Error. cannot open video: %s", url);
-        this->print_cmd_msg(YOLOTALK_CMD_ERROR_OPEN_VIDEO);
-        throw "Error. cannot open video.";
+        // throw "Error. cannot open video.";
     }
 
-    
+    while (this->running){
+        ret = cap.read(frame);
+        if (!ret) {           
+            this->print_msg("Cannot read frame: %s", url);
+            system("/home/jim/restart_sf.sh");
+        }
+        // g_mutex.lock();
+        // frame_copy = frame;
+        // std::chrono::milliseconds(10);
+        // g_mutex.unlock();
+    }
+    this->running = false;
+    cap.release();
+}
+
+void YoloDevice::predictionLoop()
+{
+    this->print_msg("Start prediction.%s", "");
+    this->print_cmd_msg(YOLOTALK_CMD_START_PREDICT);
+    int frame_id = 0;
+    int ctn = 1;
+    double fps, prediction_start_time, sum_prediction_time, loop_start_time, loop_time;
+    double lastTime = what_time_is_it_now();
+
+    // std::chrono::milliseconds timespan(5000);
+    // std::this_thread::sleep_for(timespan);
+
     while (this->running)
     {
-
-        if (!cap.read(frame))
-        {
-            this->print_msg("Cannot read frame: %s", url);
-            this->print_cmd_msg(YOLOTALK_CMD_ERROR_READ_VIDEO_FRAME);                        
-            system("/home/jim/restart_sf.sh");            
+        // if (false){
+        if (!ret){
+            this->print_msg("%s", "Waiting for new frame...");
+            std::chrono::milliseconds timespan(10000);
+            std::this_thread::sleep_for(timespan);
+            continue;
         }
+        
         Mat *to_push = new Mat(Size(frame.cols, frame.rows), CV_8UC(frame.channels()));
         frame.copyTo(*to_push);
-        frame.release();
-
         Mat *frame_ = to_push;
         
         loop_start_time = what_time_is_it_now();
@@ -174,15 +204,14 @@ void YoloDevice::predictionLoop()
         std::vector<BoundingBox *> *boxes = yolo->detect_image(frame_, thresh, 0.45);
         sum_prediction_time += what_time_is_it_now() - prediction_start_time;
 
+        
+
         this->runCallback(frame_id, frame_, boxes);
         // std::thread th(&YoloDevice::runCallback, this, frame_id, frame_, boxes);
-        // th.detach();
+        // std::thread::id tid = th.get_id();      
 
-        
-        
         frame_id++;
         ctn++;
-
         
         if (what_time_is_it_now() - lastTime >= 1)
         {
@@ -197,8 +226,7 @@ void YoloDevice::predictionLoop()
                 if (this->force_stop)
                 {
                     break;
-                }
-                this->print_msg("Exiting. Please wait. Remaining elements in queue : %d", this->videoQueue->size());
+                }                
             }
             lastTime = what_time_is_it_now();
             ctn = 0;
@@ -238,7 +266,6 @@ void YoloDevice::runCallback(int frame_id, Mat *mat, std::vector<BoundingBox *> 
         // callback
         this->predictionListener(frame_id, mat, &(*boxes)[0], boxes->size(), NULL);
     }
-
     
     mat->release();        
     delete mat;

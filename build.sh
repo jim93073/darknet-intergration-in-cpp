@@ -14,7 +14,7 @@ echo "Start compile"
 cd builds
 cmake ../
 # make -j $(nproc --all)
-make -j 1
+make -j 4
 
 echo "Cleanup Darknet static library CMake file"
 cd ../
