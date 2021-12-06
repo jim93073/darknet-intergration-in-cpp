@@ -10,8 +10,7 @@
 #include <mutex>
 #include <chrono>
 
-cv::Mat frame;
-bool ret = false;
+
 
 YoloDevice::YoloDevice(char *cfg, char *weights, char *name_list, char *url, float thresh, float *vertices, int vertices_size, char *output_folder, int max_video_queue_size, bool show_msg)
 {
@@ -150,14 +149,18 @@ void YoloDevice::videoCaptureLoop()
 
     if (!cap.isOpened()){
         this->print_msg("Error. cannot open video: %s", url);
-        system("/home/jim/restart_sf.sh");        
+        this->print_msg("Cannot read frame: %s", url);
+        std::chrono::milliseconds timespan(10000);
+//         system("/home/jim/restart_sf.sh");        
     }
 
     while (this->running){
-        ret = cap.read(frame);
+        this->ret = cap.read(this->frame);
         if (!ret) {           
             this->print_msg("Cannot read frame: %s", url);
-            system("/home/jim/restart_sf.sh");
+            std::chrono::milliseconds timespan(3000);
+            std::this_thread::sleep_for(timespan);
+//             system("/home/jim/restart_sf.sh");
         }
     }
     this->running = false;
@@ -182,8 +185,8 @@ void YoloDevice::predictionLoop()
             continue;
         }
         
-        Mat *to_push = new Mat(Size(frame.cols, frame.rows), CV_8UC(frame.channels()));
-        frame.copyTo(*to_push);
+        Mat *to_push = new Mat(Size(this->frame.cols, this->frame.rows), CV_8UC(this->frame.channels()));
+        this->frame.copyTo(*to_push);
         Mat *frame_ = to_push;
         
         loop_start_time = what_time_is_it_now();
