@@ -21,7 +21,9 @@ private:
     yolotalk::Point* vertices_data = NULL; 
     SafeQueue<Mat*> *videoQueue;
     bool show_msg;
-
+    bool ret=false;
+    cv::Mat frame;
+    
     std::thread *videoThread;
     std::thread *predictionThread;
 
