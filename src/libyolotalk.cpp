@@ -181,7 +181,7 @@ void YoloDevice::predictionLoop()
 
     while (this->running)
     {
-        if (this->!ret){            
+        if (!this->ret){            
             std::chrono::milliseconds timespan(3000);
             std::this_thread::sleep_for(timespan);
             continue;
