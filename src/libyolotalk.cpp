@@ -11,7 +11,7 @@
 #include <chrono>
 
 
-
+int global_ID = 0;
 YoloDevice::YoloDevice(char *cfg, char *weights, char *name_list, char *url, float thresh, float *vertices, int vertices_size, char *output_folder, int max_video_queue_size, bool show_msg)
 {
     this->cfg = cfg;
@@ -24,6 +24,8 @@ YoloDevice::YoloDevice(char *cfg, char *weights, char *name_list, char *url, flo
     this->videoQueue = new SafeQueue<Mat *>();
     this->max_video_queue_size = max_video_queue_size;
     this->show_msg = show_msg;  
+    this->ID = global_ID;
+    global_ID += 1;
 }
 
 
@@ -147,17 +149,18 @@ void YoloDevice::videoCaptureLoop()
 {
     cv::VideoCapture cap(url);
 
-    if (!cap.isOpened()){
-        this->print_msg("Error. cannot open video: %s", url);
-        this->print_msg("Cannot read frame: %s", url);
-        std::chrono::milliseconds timespan(10000);
-//         system("/home/jim/restart_sf.sh");        
-    }
+    
 
     while (this->running){
+        if (!cap.isOpened()){
+            this->print_msg("ID:[%d] Cannot open video: %s", this->ID, this->url);
+            std::chrono::milliseconds timespan(10000);
+            std::this_thread::sleep_for(timespan);
+        //         system("/home/jim/restart_sf.sh");        
+        }
         this->ret = cap.read(this->frame);
-        if (!ret) {           
-            this->print_msg("Cannot read frame: %s", url);
+        if (this->!ret) {           
+            this->print_msg("ID:[%d] Cannot read frame: %s", this->ID, this->url);
             std::chrono::milliseconds timespan(3000);
             std::this_thread::sleep_for(timespan);
 //             system("/home/jim/restart_sf.sh");
@@ -178,9 +181,8 @@ void YoloDevice::predictionLoop()
 
     while (this->running)
     {
-        if (!ret){
-            this->print_msg("%s", "Waiting for new frame...");
-            std::chrono::milliseconds timespan(10000);
+        if (this->!ret){            
+            std::chrono::milliseconds timespan(3000);
             std::this_thread::sleep_for(timespan);
             continue;
         }
@@ -202,12 +204,12 @@ void YoloDevice::predictionLoop()
         ctn++;
         
         if (what_time_is_it_now() - lastTime >= 1)
-        {
+        {            
             fps = 1 / (sum_prediction_time / ctn);
             this->modelFps = fps;
             if (this->show_msg)
             {
-                print_cmd_stderr("%s %.05f", YOLOTALK_CMD_PREFIX_MODEL_FPS, fps);                
+                this->print_msg("FPS: %s, [%d] URL:%s", this->fps, this->ID, this->url);                
             }
             if (!this->running)
             {
