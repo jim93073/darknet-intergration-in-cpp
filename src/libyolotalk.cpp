@@ -209,7 +209,7 @@ void YoloDevice::predictionLoop()
             this->modelFps = fps;
             if (this->show_msg)
             {
-                this->print_msg("FPS: %s, [%d] URL:%s", this->modelFps, this->ID, this->url);                
+                this->print_msg("[%d] FPS: %.1f,  URL:%s", this->ID, this->modelFps, this->url);                
             }
             if (!this->running)
             {
