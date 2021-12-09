@@ -159,7 +159,7 @@ void YoloDevice::videoCaptureLoop()
         //         system("/home/jim/restart_sf.sh");        
         }
         this->ret = cap.read(this->frame);
-        if (this->!ret) {           
+        if (!this->ret) {           
             this->print_msg("ID:[%d] Cannot read frame: %s", this->ID, this->url);
             std::chrono::milliseconds timespan(3000);
             std::this_thread::sleep_for(timespan);
