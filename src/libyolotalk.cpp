@@ -149,22 +149,17 @@ void YoloDevice::videoCaptureLoop()
 {
     cv::VideoCapture cap(url);
 
-    
-
     while (this->running){
-        if (!cap.isOpened()){
+    	this->ret = cap.read(this->frame);
+        if (!cap.isOpened() || !this->ret){
             this->print_msg("ID:[%d] Cannot open video: %s", this->ID, this->url);
+            this->print_msg("Reconnecting...");            
+            cap.release();
+            cv::VideoCapture cap(url);            
             std::chrono::milliseconds timespan(10000);
             std::this_thread::sleep_for(timespan);
-        //         system("/home/jim/restart_sf.sh");        
-        }
-        this->ret = cap.read(this->frame);
-        if (!this->ret) {           
-            this->print_msg("ID:[%d] Cannot read frame: %s", this->ID, this->url);
-            std::chrono::milliseconds timespan(3000);
-            std::this_thread::sleep_for(timespan);
-//             system("/home/jim/restart_sf.sh");
-        }
+        //         system("/home/jim/restart_sf.sh");
+        }                
     }
     this->running = false;
     cap.release();
