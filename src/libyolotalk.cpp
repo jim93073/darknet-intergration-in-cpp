@@ -161,7 +161,7 @@ void YoloDevice::videoCaptureLoop()
         //         system("/home/jim/restart_sf.sh");
         }                
     }
-    this->running = false;
+    this->print_msg("Exit the videoCapture loop:%s",this->url); 
     cap.release();
 }
 
@@ -220,6 +220,7 @@ void YoloDevice::predictionLoop()
         loop_time = what_time_is_it_now() - loop_start_time;
         this->overAllFps = 1.0 / loop_time;        
     }
+    this->print_msg("Exit the prediction loop:%s",this->url); 
 }
 
 std::string YoloDevice::get_full_output_folder_path()
