@@ -155,9 +155,9 @@ void YoloDevice::videoCaptureLoop()
             this->print_msg("ID:[%d] Cannot open video: %s", this->ID, this->url);
             this->print_msg("Reconnecting...");            
             cap.release();
-            cv::VideoCapture cap(url);            
             std::chrono::milliseconds timespan(10000);
             std::this_thread::sleep_for(timespan);
+            cv::VideoCapture cap(url);
         //         system("/home/jim/restart_sf.sh");
         }                
     }
