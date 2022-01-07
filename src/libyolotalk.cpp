@@ -158,7 +158,7 @@ void YoloDevice::videoCaptureLoop()
             std::chrono::milliseconds timespan(10000);
             std::this_thread::sleep_for(timespan);
             cv::VideoCapture cap(url);
-        //         system("/home/jim/restart_sf.sh");
+           //system("~/SmartFence/darknet-integration/restart_sf.sh");
         }                
     }
     this->print_msg("Exit the videoCapture loop:%s",this->url); 
