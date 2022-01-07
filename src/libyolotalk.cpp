@@ -188,13 +188,12 @@ void YoloDevice::predictionLoop()
         
         loop_start_time = what_time_is_it_now();
         prediction_start_time = what_time_is_it_now();
-        std::vector<BoundingBox *> *boxes = yolo->detect_image(frame_, thresh, 0.45);
-        sum_prediction_time += what_time_is_it_now() - prediction_start_time;
+        std::vector<BoundingBox *> *boxes = yolo->detect_image(frame_, thresh, 0.45);        
 
         this->runCallback(frame_id, frame_, boxes);
         // std::thread th(&YoloDevice::runCallback, this, frame_id, frame_, boxes);
         // std::thread::id tid = th.get_id();
-
+        sum_prediction_time += what_time_is_it_now() - prediction_start_time;
         frame_id++;
         ctn++;
         
