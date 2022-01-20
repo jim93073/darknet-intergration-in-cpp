@@ -148,17 +148,23 @@ void YoloDevice::warmUpModel()
 void YoloDevice::videoCaptureLoop()
 {
     cv::VideoCapture cap(url);
-
+    int retry = 1;
+    
     while (this->running){
     	this->ret = cap.read(this->frame);
-        if (!cap.isOpened() || !this->ret){
+      if(retry % 5 == 0){
+        retry ++;
+        system("~/SmartFence/darknet-integration/restart_sf.sh");
+      }  
+      if (!cap.isOpened() || !this->ret){
             this->print_msg("ID:[%d] Cannot open video: %s", this->ID, this->url);
             this->print_msg("Reconnecting...");            
             cap.release();
             std::chrono::milliseconds timespan(10000);
             std::this_thread::sleep_for(timespan);
             cv::VideoCapture cap(url);
-           //system("~/SmartFence/darknet-integration/restart_sf.sh");
+            retry ++;
+           
         }                
     }
     this->print_msg("Exit the videoCapture loop:%s",this->url); 
